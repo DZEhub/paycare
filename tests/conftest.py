@@ -12,7 +12,8 @@ from types import ModuleType  # Build a lightweight package alias for legacy imp
 import pandas as pd  # Build deterministic DataFrame inputs for ETL tests.
 import pytest  # Expose reusable fixtures to every test module in this directory.
 
-from app import etl as app_etl  # Reuse the real ETL module as the canonical test target.
+# from app import etl as app_etl  # Reuse the real ETL module as the canonical test target.
+import app.etl as app_etl  # Import the ETL module so monkeypatching updates the same function object.
 
 # paycare_package = ModuleType("paycare")  # Create a synthetic package name for older test code.
 # paycare_package.__path__ = []  # Mark the alias as package-like so submodule imports can resolve.
