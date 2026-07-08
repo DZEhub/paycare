@@ -57,6 +57,7 @@ jobs:  # Ensemble des jobs du pipeline
               run: |
                 pwd
                 echo "Current directory contents:"
+                ls
                 ls -la
             # create a directory for artifacts : actions/upload-artifact@v4
             - name: Create Artifact Directory
