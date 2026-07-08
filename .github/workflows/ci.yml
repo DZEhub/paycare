@@ -1,0 +1,127 @@
+# ===========================================================
+# Phase 3: Automate with GitHub Actions (CI Workflow)
+# ===========================================================
+# Now that you’ve containerized the application and written tests, your final task is to create a GitHub Actions workflow that automates the following steps:
+#   1. Clone the Repository: The workflow will pull the latest code from your PayCare repository.
+#   2. Run Tests: The workflow will run the tests you’ve written to validate the ETL pipeline’s functionality.
+#   3. Build the Docker Image: The workflow will build the Docker image using the Dockerfile you wrote.
+#   4. Run the Container: The workflow will run the Docker container, passing an input CSV file and generating the output file.
+#   5. (Optional) Publish Artifacts / Logs: The workflow can upload the processed CSV and test reports as artifacts for inspection.
+#
+# GitHub Actions Workflow Requirements:
+#   - Create a workflow file at: .github/workflows/ci.yml
+#   - The workflow should:
+#       1. Check out the repository (using actions/checkout).
+#       2. Set up Python (using actions/setup-python).
+#       3. Install dependencies (e.g., pip install -r requirements.txt and pytest).
+#       4. Run the pytest tests to validate the ETL pipeline.
+#       5. Build the Docker image using your Dockerfile.
+#       6. Run the Docker container, ensuring that:
+#           - An input CSV is available (for example, by using the data/ folder from the repo or a test CSV).
+#           - Volumes are mounted correctly so the output CSV file is written to a known location.
+#       7. Fail the workflow if tests fail or if the container exits with a non-zero status code.
+#       8. (Optional) Upload artifacts such as the processed CSV or test reports using actions/upload-artifact.
+#
+# Workflow Structure (High-Level):
+# 1. Job: build-and-test
+#   - Step 1: Checkout Repository
+#       - Use actions/checkout@v4 to pull the latest code.
+#   - Step 2: Set Up Python & Install Dependencies
+#       - Use actions/setup-python@v4 to set up the Python environment.
+#       - Install requirements and pytest.
+#   - Step 3: Run Tests
+#       - Run pytest to validate the ETL logic.
+#   - Step 4: Build Docker Image
+#       - Run docker build -t paycare-etl .
+#   - Step 5: Run Container
+#       - Run the Docker container with appropriate volume mounts, e.g.:
+#         docker run --rm -v $(pwd)/data:/app/data paycare-etl
+#   - Step 6: (Optional) Upload Artifacts
+#       - Use actions/upload-artifact to store the output CSV or logs.
+name: DZ-MLOps - Paycare - CI Workflow  # Nom du workflow affiche dans l'onglet Actions
+on:  # Evenements qui declenchent le pipeline
+    push:  # A chaque push de commits...
+        branches: [ main, develop ]  # ...sur ces deux branches
+    pull_request:  # A chaque Pull Request...
+        branches: [ main ]           # ...ciblant la branche main
+env:  # Variables globales reutilisables
+    IMAGE: paycare-etl #ghcr.io/org/ml-app  # Nom de l'image Docker cible
+    CONTAINER_NAME: paycare-etl-container  # Nom du container Docker
+    PYTHON_VERSION: "3.11"  # Version de Python du runner
+jobs:  # Ensemble des jobs du pipeline
+    smoke-tests:  # Job 1 : Smoke tests with curl
+        runs-on: ubuntu-latest  # Machine virtuelle hebergee par GitHub
+        steps:  # Etapes executees sequentiellement
+            # ++++++++++++++++++ Step 1: Checkout Repository: ++++++++++++++++++
+            # Check out the repository (using actions/checkout).
+            # Use actions/checkout@v4 to pull the latest code.
+            - name: Checkout Repository
+              uses: actions/checkout@v4  # Clone le code du depot
+            
+            # ++++++++++++++++++ Step 2: Set Up Python & Install Dependencies: ++++++++++++++++++
+            # Install dependencies (e.g., pip install -r requirements.txt and pytest).
+            # Install requirements and pytest.
+            - name: Set Up Python & Install Dependencies
+              uses: actions/setup-python@v4
+              with:
+                python-version: ${{ env.PYTHON_VERSION }}
+            - name: Install Dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install pytest
+            
+            # ++++++++++++++++++ Step 3: Run Tests: ++++++++++++++++++
+            # Run the pytest tests to validate the ETL pipeline.
+            # Run pytest to validate the ETL logic.
+            # run: pytest -v tests/
+            - name: Run Tests using pytest
+              run: |
+                pytest tests/  # Adjust the path to your test directory if needed by using the -k option to specify test files or directories. Example: pytest -k "test_etl.py" or pytest -k "tests/test_etl.py"
+            
+            # ++++++++++++++++++ Step 4: Build Docker Image: ++++++++++++++++++
+            # Build the Docker image using your Dockerfile.
+            # Run docker build -t paycare-etl .
+            - name: Build Docker Image
+              run: |
+                docker build -t ${{ env.IMAGE }} .
+            
+            # ++++++++++++++++++ Step 5: Run Container: ++++++++++++++++++
+            # Run the Docker container, ensuring that:
+            # Run the Docker container with appropriate volume mounts, e.g.:
+            # docker run --rm -v $(pwd)/data:/app/data paycare-etl
+            - name: Run Container
+              run: |
+                docker run --name ${{ env.CONTAINER_NAME }} --rm -v $(pwd)/data:/app/data ${{ env.IMAGE }}
+            
+            # ++++++++++++++++++ Step 6: (Optional) Upload Artifacts: ++++++++++++++++++
+            # (Optional) Upload artifacts such as the processed CSV or test reports using actions/upload-artifact.
+            # Use actions/upload-artifact to store the output CSV or logs
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: processed-data
+                path: data/processed/
+                if-no-files-found: ignore
+            
+            # ===========================================================
+            #  CLEANUP: Stop and remove the Docker container, and remove the Docker image to free up space.
+            # ===========================================================
+            - name: Stop Docker Container
+              if: always()
+              run: docker stop ${{ env.CONTAINER_NAME }} || true 
+            # run: docker stop ${{ env.CONTAINER_NAME }}
+            
+            - name: remove docker container
+              if: always()
+              run: docker rm ${{ env.CONTAINER_NAME }}
+            
+            - name: check docker container status
+              if: always()
+              run: |
+                    docker ps -a
+                    docker logs ${{ env.CONTAINER_NAME }}
+            
+            - name: remove docker image
+              if: always()
+              run: docker rmi ${{ env.IMAGE }}

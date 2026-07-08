@@ -1,1 +1,10 @@
-pandas==2.0.3
+# Phase 1: Dockerfile Requirements
+#   1. Base the Docker image on an official Python image (e.g., python:3.9).
+#   2. Install dependencies (e.g., pandas, plus anything listed in requirements.txt).
+#   3. Copy the ETL code into the image and set an appropriate working directory.
+#   4. Ensure that the Docker container can be run with mounted volumes for both the input and output CSV files (so that the pipeline can read and write files on the host).
+pandas
+pytest
+# fastapi
+# uvicorn
+# pydantic

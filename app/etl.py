@@ -1,6 +1,9 @@
 import pandas as pd
 
-# Step 1: Extract
+
+#* ==================================
+#* Step 1: Extract
+#* ==================================
 def extract_data(file_path):
     """Extracts data from a CSV file."""
     try:
@@ -11,7 +14,10 @@ def extract_data(file_path):
         print(f"Error in data extraction: {e}")
         return None
 
-# Step 2: Transform
+
+#* ==================================
+#* Step 2: Transform
+#* ==================================
 def transform_data(data):
     """Transforms the data by cleaning and adding new features."""
     try:
@@ -30,7 +36,10 @@ def transform_data(data):
         print(f"Error in data transformation: {e}")
         return None
 
-# Step 3: Load
+
+#* ==================================
+#* Step 3: Load
+#* ==================================
 def load_data(data, output_file_path):
     """Loads the transformed data into a new CSV file."""
     try:
@@ -39,7 +48,10 @@ def load_data(data, output_file_path):
     except Exception as e:
         print(f"Error in data loading: {e}")
 
-# Main ETL function
+
+#* ==================================
+#* Main ETL function
+#* ==================================
 def etl_process(input_file, output_file):
     data = extract_data(input_file)
     if data is not None:
