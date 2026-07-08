@@ -53,6 +53,11 @@ jobs:  # Ensemble des jobs du pipeline
     smoke-tests:  # Job 1 : Smoke tests with curl
         runs-on: ubuntu-latest  # Machine virtuelle hebergee par GitHub
         steps:  # Etapes executees sequentiellement
+            - name: check current working directory
+              run: |
+                pwd
+                echo "Current directory contents:"
+                ls -la
             # create a directory for artifacts : actions/upload-artifact@v4
             - name: Create Artifact Directory
               run: mkdir -p ${{ env.ARTIFACT_DIR }}
