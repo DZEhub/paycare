@@ -127,24 +127,24 @@ jobs:  # Ensemble des jobs du pipeline
                 path: ${{ env.ARTIFACT_DIR }}/processed_data/
                 if-no-files-found: ignore
             
-            # ===========================================================
-            #  CLEANUP: Stop and remove the Docker container, and remove the Docker image to free up space.
-            # ===========================================================
-            - name: Stop Docker Container
-              if: always()
-              run: docker stop ${{ env.CONTAINER_NAME }} || true 
-            # run: docker stop ${{ env.CONTAINER_NAME }}
+            # # ===========================================================
+            # #  CLEANUP: Stop and remove the Docker container, and remove the Docker image to free up space.
+            # # ===========================================================
+            # - name: Stop Docker Container
+            #   if: always()
+            #   run: docker stop ${{ env.CONTAINER_NAME }} || true 
+            # # run: docker stop ${{ env.CONTAINER_NAME }}
             
-            - name: remove docker container
-              if: always()
-              run: docker rm ${{ env.CONTAINER_NAME }}
+            # - name: remove docker container
+            #   if: always()
+            #   run: docker rm ${{ env.CONTAINER_NAME }}
             
-            - name: check docker container status
-              if: always()
-              run: |
-                    docker ps -a
-                    docker logs ${{ env.CONTAINER_NAME }}
+            # - name: check docker container status
+            #   if: always()
+            #   run: |
+            #         docker ps -a
+            #         docker logs ${{ env.CONTAINER_NAME }}
             
-            - name: remove docker image
-              if: always()
-              run: docker rmi ${{ env.IMAGE }}
+            # - name: remove docker image
+            #   if: always()
+            #   run: docker rmi ${{ env.IMAGE }}
