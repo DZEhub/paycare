@@ -14,11 +14,11 @@ import pytest  # Expose reusable fixtures to every test module in this directory
 
 from app import etl as app_etl  # Reuse the real ETL module as the canonical test target.
 
-paycare_package = ModuleType("paycare")  # Create a synthetic package name for older test code.
-paycare_package.__path__ = []  # Mark the alias as package-like so submodule imports can resolve.
-paycare_package.etl = app_etl  # Expose app.etl through the expected paycare.etl namespace.
-sys.modules.setdefault("paycare", paycare_package)  # Register the synthetic package only if it is missing.
-sys.modules["paycare.etl"] = app_etl  # Map paycare.etl directly to the real ETL module.
+# paycare_package = ModuleType("paycare")  # Create a synthetic package name for older test code.
+# paycare_package.__path__ = []  # Mark the alias as package-like so submodule imports can resolve.
+# paycare_package.etl = app_etl  # Expose app.etl through the expected paycare.etl namespace.
+# sys.modules.setdefault("paycare", paycare_package)  # Register the synthetic package only if it is missing.
+# sys.modules["paycare.etl"] = app_etl  # Map paycare.etl directly to the real ETL module.
 
 
 @pytest.fixture(scope="session")  # Create the base dataset once for the whole test session.
