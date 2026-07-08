@@ -48,10 +48,16 @@ env:  # Variables globales reutilisables
     IMAGE: paycare-etl #ghcr.io/org/ml-app  # Nom de l'image Docker cible
     CONTAINER_NAME: paycare-etl-container  # Nom du container Docker
     PYTHON_VERSION: "3.11"  # Version de Python du runner
+    ARTIFACT_DIR: artifacts  # Directory to store artifacts
 jobs:  # Ensemble des jobs du pipeline
     smoke-tests:  # Job 1 : Smoke tests with curl
         runs-on: ubuntu-latest  # Machine virtuelle hebergee par GitHub
         steps:  # Etapes executees sequentiellement
+            # create a directory for artifacts : actions/upload-artifact@v4
+            - name: Create Artifact Directory
+              run: mkdir -p ${{ env.ARTIFACT_DIR }}
+            - name: Create a sample artifact file
+              run: echo hello > ${{ env.ARTIFACT_DIR }}/hello.txt
             # ++++++++++++++++++ Step 1: Checkout Repository: ++++++++++++++++++
             # Check out the repository (using actions/checkout).
             # Use actions/checkout@v4 to pull the latest code.
@@ -69,15 +75,18 @@ jobs:  # Ensemble des jobs du pipeline
               run: |
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
-                pip install pytest
+                pip install pytest pytest-html
             
             # ++++++++++++++++++ Step 3: Run Tests: ++++++++++++++++++
             # Run the pytest tests to validate the ETL pipeline.
             # Run pytest to validate the ETL logic.
+            # pytest generate test report
             # run: pytest -v tests/
+            # pytest tests/ # Adjust the path to your test directory if needed by using the -k option to specify test files or directories. Example: pytest -k "test_etl.py" or pytest -k "tests/test_etl.py"
             - name: Run Tests using pytest
               run: |
-                pytest tests/  # Adjust the path to your test directory if needed by using the -k option to specify test files or directories. Example: pytest -k "test_etl.py" or pytest -k "tests/test_etl.py"
+                mkdir -p ${{ env.ARTIFACT_DIR }}/reports
+                pytest tests/ -v --junitxml=${{ env.ARTIFACT_DIR }}/reports/pytest-report.xml --html=${{ env.ARTIFACT_DIR }}/reports/pytest-report.html --self-contained-html
             
             # ++++++++++++++++++ Step 4: Build Docker Image: ++++++++++++++++++
             # Build the Docker image using your Dockerfile.
@@ -97,11 +106,20 @@ jobs:  # Ensemble des jobs du pipeline
             # ++++++++++++++++++ Step 6: (Optional) Upload Artifacts: ++++++++++++++++++
             # (Optional) Upload artifacts such as the processed CSV or test reports using actions/upload-artifact.
             # Use actions/upload-artifact to store the output CSV or logs
-            - name: Upload Artifacts
-              uses: actions/upload-artifact@v3
+            # actions/upload-artifact@v3 is deprecated, consider using actions/upload-artifact@v4 instead.
+            # Error: This request has been automatically failed because it uses a deprecated version of `actions/upload-artifact: v3`. Learn more: https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/
+            - name: Upload Test reports
+              uses: actions/upload-artifact@v4
               with:
-                name: processed-data
-                path: data/processed/
+                name: pytest-reports
+                path: ${{ env.ARTIFACT_DIR }}/reports/
+                if-no-files-found: ignore
+            
+            - name: Upload processed csv data
+              uses: actions/upload-artifact@v4
+              with:
+                name: processed-csv
+                path: ${{ env.ARTIFACT_DIR }}/processed_data/
                 if-no-files-found: ignore
             
             # ===========================================================
