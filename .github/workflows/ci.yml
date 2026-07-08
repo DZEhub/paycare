@@ -92,6 +92,8 @@ jobs:  # Ensemble des jobs du pipeline
             - name: Run Tests using pytest
               run: |
                 mkdir -p ${{ env.ARTIFACT_DIR }}/reports
+                export PYTHONPATH="${{ github.workspace }}:$PYTHONPATH"
+                echo "PYTHONPATH=$PYTHONPATH"
                 pytest tests/ -v --junitxml=${{ env.ARTIFACT_DIR }}/reports/pytest-report.xml --html=${{ env.ARTIFACT_DIR }}/reports/pytest-report.html --self-contained-html
             
             # ++++++++++++++++++ Step 4: Build Docker Image: ++++++++++++++++++
