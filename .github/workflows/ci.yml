@@ -141,21 +141,18 @@ jobs:  # Ensemble des jobs du pipeline
             # ===========================================================
             #  CLEANUP: Stop and remove the Docker container, and remove the Docker image to free up space.
             # ===========================================================
-            - name: Stop Docker Container
-              if: always()
-              run: docker stop ${{ env.CONTAINER_NAME }} || true 
-            # run: docker stop ${{ env.CONTAINER_NAME }}
-            
-            - name: remove docker container
-              if: always()
-              run: docker rm ${{ env.CONTAINER_NAME }}
-            
             - name: check docker container status
               if: always()
               run: |
                     docker ps -a
                     docker logs ${{ env.CONTAINER_NAME }}
+            - name: Stop Docker Container
+              if: always()
+              run: docker stop ${{ env.CONTAINER_NAME }} || true
             
+            - name: remove docker container
+              if: always()
+              run: docker rm ${{ env.CONTAINER_NAME }} || true
             - name: remove docker image
               if: always()
-              run: docker rmi ${{ env.IMAGE }}
+              run: docker rmi ${{ env.IMAGE }} || true
