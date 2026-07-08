@@ -26,4 +26,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run etl.py when the container launches
-CMD ["python", "etl.py"]
+CMD ["python", "app/etl.py"]
