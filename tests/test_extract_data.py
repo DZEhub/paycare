@@ -17,6 +17,7 @@ import pytest
 import pandas as pd
 from app.etl import extract_data
 
+
 def test_extract_data(tmp_path):
     # Create a sample CSV file in the temporary directory
     sample_csv = tmp_path / "sample.csv"
